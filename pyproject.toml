@@ -40,6 +40,8 @@ dependencies = [
     "huggingface-hub",
     "pydantic",
     "tqdm",
+    "simplejson",
+    "sortedcontainers",
     "soundfile",
     "funasr",
     "spaces"
