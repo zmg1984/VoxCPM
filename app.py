@@ -170,7 +170,7 @@ def create_demo_interface(demo: VoxCPMDemo):
 
         # Pro Tips
         with gr.Accordion("💡 Pro Tips ｜使用建议", open=False, elem_id="acc_tips"):
-            gr.Markdown(f"""
+            gr.Markdown("""
             ### Prompt Speech Enhancement｜参考语音降噪
             - **Enable** to remove background noise for a clean, studio-like voice, with an external ZipEnhancer component.  
               **启用**：通过 ZipEnhancer 组件消除背景噪音，获得更好的音质。
