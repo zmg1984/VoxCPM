@@ -69,7 +69,7 @@ Documentation = "https://github.com/OpenBMB/VoxCPM#readme"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["voxcpm"]
+include = ["voxcpm*"]
 
 [tool.setuptools.package-dir]
 "" = "src"
