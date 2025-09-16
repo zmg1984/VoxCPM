@@ -88,7 +88,7 @@ class UnifiedCFM(torch.nn.Module):
                 shape: (n_timesteps + 1,)
             mu (torch.Tensor): output of encoder
                 shape: (batch_size, n_feats)
-            cond: Not used but kept for future purposes
+            cond: condition -- prefix prompt
             cfg_value (float, optional): cfg value for guidance. Defaults to 1.0.
         """
         t, _, dt = t_span[0], t_span[-1], t_span[0] - t_span[1]
