@@ -87,10 +87,10 @@ After installation, the entry point is `voxcpm` (or use `python -m voxcpm.cli`).
 
 ```bash
 # 1) Direct synthesis (single text)
-voxcpm --text "Hello VoxCPM" --output out.wav
+voxcpm --text "VoxCPM is an innovative end-to-end TTS model from ModelBest, designed to generate highly expressive speech." --output out.wav
 
 # 2) Voice cloning (reference audio + transcript)
-voxcpm --text "Hello" \
+voxcpm --text "VoxCPM is an innovative end-to-end TTS model from ModelBest, designed to generate highly expressive speech." \
   --prompt-audio path/to/voice.wav \
   --prompt-text "reference transcript" \
   --output out.wav \

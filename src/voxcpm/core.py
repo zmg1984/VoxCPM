@@ -2,8 +2,6 @@ import torch
 import torchaudio
 import os
 import tempfile
-from modelscope.pipelines import pipeline
-from modelscope.utils.constant import Tasks
 from huggingface_hub import snapshot_download
 from .model.voxcpm import VoxCPMModel
 from .utils.text_normalize import TextNormalizer
@@ -29,9 +27,8 @@ class VoxCPM:
         self.tts_model = VoxCPMModel.from_local(voxcpm_model_path)
         self.text_normalizer = TextNormalizer()
         if enable_denoiser and zipenhancer_model_path is not None:
-            self.denoiser = pipeline(
-                Tasks.acoustic_noise_suppression,
-                model=zipenhancer_model_path)
+            from .zipenhancer import ZipEnhancer
+            self.denoiser = ZipEnhancer(zipenhancer_model_path)
         else:
             self.denoiser = None
         print("Warm up VoxCPMModel...")
@@ -41,7 +38,7 @@ class VoxCPM:
 
     @classmethod
     def from_pretrained(cls,
-            hf_model_id: str = "openbmb/VoxCPM-0.5B",
+            hf_model_id: str = "openbmb/VoxCPM",
             load_denoiser: bool = True,
             zipenhancer_model_id: str = "iic/speech_zipenhancer_ans_multiloss_16k_base",
             cache_dir: str = None,
@@ -50,7 +47,7 @@ class VoxCPM:
         """Instantiate ``VoxCPM`` from a Hugging Face Hub snapshot.
 
         Args:
-            hf_model_id: Explicit Hugging Face repository id (e.g. "org/repo").
+            hf_model_id: Explicit Hugging Face repository id (e.g. "org/repo") or local path.
             load_denoiser: Whether to initialize the denoiser pipeline.
             zipenhancer_model_id: Denoiser model id or path for ModelScope
                 acoustic noise suppression.
@@ -67,26 +64,25 @@ class VoxCPM:
                 ``hf_model_id`` is provided.
         """
         repo_id = hf_model_id
-        if not repo_id or repo_id.strip() == "":
-            raise ValueError("You must provide a valid hf_model_id")
-
-        local_path = snapshot_download(
-            repo_id=repo_id,
-            cache_dir=cache_dir,
-            local_files_only=local_files_only,
-        )
+        if not repo_id:
+            raise ValueError("You must provide hf_model_id")
+        
+        # Load from local path if provided
+        if os.path.isdir(repo_id):
+            local_path = repo_id
+        else:
+            # Otherwise, try from_pretrained (Hub); exit on failure
+            local_path = snapshot_download(
+                repo_id=repo_id,
+                cache_dir=cache_dir,
+                local_files_only=local_files_only,
+            )
 
         return cls(
             voxcpm_model_path=local_path,
             zipenhancer_model_path=zipenhancer_model_id if load_denoiser else None,
             enable_denoiser=load_denoiser,
         )
-        
-    def _normalize_loudness(self, wav_path: str):
-        audio, sr = torchaudio.load(wav_path)
-        loudness = torchaudio.functional.loudness(audio, sr)
-        normalized_audio = torchaudio.functional.gain(audio, -20-loudness)
-        torchaudio.save(wav_path, normalized_audio, sr)
 
     def generate(self, 
             text : str,
@@ -135,9 +131,7 @@ class VoxCPM:
                 if denoise and self.denoiser is not None:
                     with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
                         temp_prompt_wav_path = tmp_file.name
-                    
-                    self.denoiser(prompt_wav_path, output_path=temp_prompt_wav_path)
-                    self._normalize_loudness(temp_prompt_wav_path)
+                    self.denoiser.enhance(prompt_wav_path, output_path=temp_prompt_wav_path)
                     prompt_wav_path = temp_prompt_wav_path
                 fixed_prompt_cache = self.tts_model.build_prompt_cache(
                     prompt_wav_path=prompt_wav_path,
