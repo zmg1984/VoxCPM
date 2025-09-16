@@ -3,41 +3,8 @@ import re
 import regex
 import inflect
 from functools import partial
-from tn.chinese.normalizer import Normalizer as ZhNormalizer
-from tn.english.normalizer import Normalizer as EnNormalizer
+from wetext import Normalizer
 
-def normal_cut_sentence(text):
-    # 先处理括号内的逗号，将其替换为特殊标记
-    text = re.sub(r'([（(][^）)]*)([,，])([^）)]*[）)])', r'\1&&&\3', text)
-    text = re.sub('([。！，？\?])([^’”])',r'\1\n\2',text)#普通断句符号且后面没有引号
-    text = re.sub('(\.{6})([^’”])',r'\1\n\2',text)#英文省略号且后面没有引号
-    text = re.sub('(\…{2})([^’”])',r'\1\n\2',text)#中文省略号且后面没有引号
-    text = re.sub('([. ,。！；？\?\.{6}\…{2}][’”])([^’”])',r'\1\n\2',text)#断句号+引号且后面没有引号
-    # 处理英文句子的分隔
-    text = re.sub(r'([.,!?])([^’”\'"])', r'\1\n\2', text)  # 句号、感叹号、问号后面没有引号
-    text = re.sub(r'([.!?][’”\'"])([^’”\'"])', r'\1\n\2', text)  # 句号、感叹号、问号加引号后面的部分
-    text = re.sub(r'([（(][^）)]*)(&&&)([^）)]*[）)])', r'\1，\3', text)
-    text = [t for t in text.split("\n") if t]
-    return text
-
-
-def cut_sentence_with_fix_length(text : str, length : int):
-    sentences = normal_cut_sentence(text)
-    cur_length = 0
-    res = ""
-    for sentence in sentences:
-        if not sentence:
-            continue
-        if cur_length > length or cur_length + len(sentence) > length:
-            yield res
-            res = ""
-            cur_length = 0
-        res += sentence
-        cur_length += len(sentence)
-    if res:
-        yield res
-
- 
 chinese_char_pattern = re.compile(r'[\u4e00-\u9fff]+')
 
 # whether contain chinese character
@@ -195,8 +162,8 @@ def clean_text(text):
 class TextNormalizer:
     def __init__(self, tokenizer=None):
         self.tokenizer = tokenizer
-        self.zh_tn_model = ZhNormalizer(remove_erhua=False, full_to_half=False, remove_interjections=False, overwrite_cache=True)
-        self.en_tn_model = EnNormalizer()
+        self.zh_tn_model = Normalizer(lang="zh", operator="tn", remove_erhua=True)
+        self.en_tn_model = Normalizer(lang="en", operator="tn")
         self.inflect_parser = inflect.engine()
     
     def normalize(self, text, split=False):
@@ -207,38 +174,12 @@ class TextNormalizer:
             text = text.replace("=", "等于") # 修复 ”550 + 320 等于 870 千卡。“ 被错误正则为 ”五百五十加三百二十等于八七十千卡.“
             if re.search(r'([\d$%^*_+≥≤≠×÷?=])', text): # 避免 英文连字符被错误正则为减
                 text = re.sub(r'(?<=[a-zA-Z0-9])-(?=\d)', ' - ', text) # 修复 x-2 被正则为 x负2
-                text = self.zh_tn_model.normalize(text)
-            text = re.sub(r'(?<=[a-zA-Z0-9])-(?=\d)', ' - ', text) # 修复 x-2 被正则为 x负2
             text = self.zh_tn_model.normalize(text)
             text = replace_blank(text)
             text = replace_corner_mark(text)
             text = remove_bracket(text)
-            text = re.sub(r'[，,]+$', '。', text)
         else:
             text = self.en_tn_model.normalize(text)
             text = spell_out_number(text, self.inflect_parser)
         if split is False:
             return text
-        
-        
-if __name__ == "__main__":
-    text_normalizer = TextNormalizer()
-    text = r"""今天我们学习一元二次方程。一元二次方程的标准形式是：
-ax2+bx+c=0ax^2 + bx + c = 0ax2+bx+c=0 
-其中，aaa、bbb 和 ccc 是常数，xxx 是变量。这个方程的解可以通过求根公式来找到。
-一元二次方程的解法有几种：
-  - 因式分解法：通过将方程因式分解来求解。我们首先尝试将方程表达成两个括号的形式，解决方程的解。比如，方程x2−5x+6=0x^2 - 5x + 6 = 0x2−5x+6=0可以因式分解为(x−2)(x−3)=0(x - 2)(x - 3) = 0(x−2)(x−3)=0，因此根为2和3。
-  - 配方法：通过配方将方程转化为完全平方的形式，从而解出。我们通过加上或减去适当的常数来完成这一过程，使得方程可以直接写成一个完全平方的形式。
-  - 求根公式：我们可以使用求根公式直接求出方程的解。这个公式适用于所有的一元二次方程，即使我们无法通过因式分解或配方法来解决时，也能使用该公式。
-公式：x=−b±b2−4ac2ax = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}x=2a−b±b2−4ac​​这个公式可以帮助我们求解任何一元二次方程的根。
-对于一元二次方程，我们需要了解判别式。判别式的作用是帮助我们判断方程的解的个数和性质。判别式 Δ\DeltaΔ 由下式给出：Δ=b2−4ac\Delta = b^2 - 4acΔ=b2−4ac 根据判别式的值，我们可以知道：
-  - 如果 Δ>0\Delta > 0Δ>0，方程有两个不相等的实数解。这是因为判别式大于0时，根号内的值是正数，所以我们可以得到两个不同的解。
-  - 如果 Δ=0\Delta = 0Δ=0，方程有一个实数解。这是因为根号内的值为零，导致两个解相等，也就是说方程有一个解。
-  - 如果 Δ<0\Delta < 0Δ<0，方程没有实数解。这意味着根号内的值是负数，无法进行实数运算，因此方程没有实数解，可能有复数解。"""
-    texts = ["这是一个公式 (a+b)³=a³+3a²b+3ab²+b³ S=(a×b)÷2", "这样的发展为AI仅仅作为“工具”这一观点提出了新的挑战，", "550 + 320 = 870千卡。", "解一元二次方程：3x^2+x-2=0", "你好啊"]
-    texts = [text]
-    for text in texts:
-        text = text_normalizer.normalize(text)
-        print(text)
-        for t in cut_sentence_with_fix_length(text, 15):
-            print(t)
