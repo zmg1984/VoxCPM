@@ -38,7 +38,7 @@ class VoxCPM:
 
     @classmethod
     def from_pretrained(cls,
-            hf_model_id: str = "openbmb/VoxCPM",
+            hf_model_id: str = "openbmb/VoxCPM-0.5B",
             load_denoiser: bool = True,
             zipenhancer_model_id: str = "iic/speech_zipenhancer_ans_multiloss_16k_base",
             cache_dir: str = None,
