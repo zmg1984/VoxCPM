@@ -4,8 +4,6 @@ import os
 import tempfile
 from huggingface_hub import snapshot_download
 from .model.voxcpm import VoxCPMModel
-from .utils.text_normalize import TextNormalizer
-
 
 class VoxCPM:
     def __init__(self,
@@ -25,7 +23,7 @@ class VoxCPM:
         """
         print(f"voxcpm_model_path: {voxcpm_model_path}, zipenhancer_model_path: {zipenhancer_model_path}, enable_denoiser: {enable_denoiser}")
         self.tts_model = VoxCPMModel.from_local(voxcpm_model_path)
-        self.text_normalizer = TextNormalizer()
+        self.text_normalizer = None
         if enable_denoiser and zipenhancer_model_path is not None:
             from .zipenhancer import ZipEnhancer
             self.denoiser = ZipEnhancer(zipenhancer_model_path)
@@ -33,8 +31,9 @@ class VoxCPM:
             self.denoiser = None
         print("Warm up VoxCPMModel...")
         self.tts_model.generate(
-            target_text="Hello, this is the first test sentence."
-        ) 
+            target_text="Hello, this is the first test sentence.",
+            max_len=10,
+        )
 
     @classmethod
     def from_pretrained(cls,
@@ -145,6 +144,9 @@ class VoxCPM:
                     continue
                 print("sub_text:", sub_text)
                 if normalize:
+                    if self.text_normalizer is None:
+                        from .utils.text_normalize import TextNormalizer
+                        self.text_normalizer = TextNormalizer()
                     sub_text = self.text_normalizer.normalize(sub_text)
                 wav, target_text_token, generated_audio_feat = self.tts_model.generate_with_prompt_cache(
                                 target_text=sub_text,
