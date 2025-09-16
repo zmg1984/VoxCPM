@@ -34,7 +34,7 @@ dependencies = [
     "gradio",
     "inflect",
     "addict",
-    "WeTextProcessing",
+    "wetext",
     "modelscope>=1.22.0",
     "datasets>=2,<4",
     "huggingface-hub",
