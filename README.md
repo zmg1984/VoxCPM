@@ -267,6 +267,8 @@ This project is developed by the following institutions:
 - <img src="assets/thuhcsi_logo.png" width="28px"> [THUHCSI](https://github.com/thuhcsi)
 
 
+## ⭐ Star History
+ [![Star History Chart](https://api.star-history.com/svg?repos=OpenBMB/VoxCPM&type=Date)](https://star-history.com/#OpenBMB/VoxCPM&Date)
 
 
 ## 📚 Citation
