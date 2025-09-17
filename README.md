@@ -37,27 +37,6 @@ Unlike mainstream approaches that convert speech to discrete tokens, VoxCPM uses
 
 
 
-###  📝  TODO List
-🎉  Please stay tuned for updates!
-
- - <label>
-    <input type="checkbox" disabled>
-    <span>Release technical report</span>
-  </label>
-
- - <label>
-    <input type="checkbox" disabled>
-    <span>Support higher sampling rate</span>
-  </label>
-
-
-
-
-
-
-
-
-
 
 
 ##  Quick Start
@@ -258,6 +237,13 @@ VoxCPM achieves competitive results on public zero-shot TTS benchmarks:
 - Current Technical Limitations: Although generally stable, the model may occasionally exhibit instability, especially with very long or expressive inputs. Furthermore, the current version offers limited direct control over specific speech attributes like emotion or speaking style.
 - Bilingual Model: VoxCPM is trained primarily on Chinese and English data. Performance on other languages is not guaranteed and may result in unpredictable or low-quality audio.
 - This model is released for research and development purposes only. We do not recommend its use in production or commercial applications without rigorous testing and safety evaluations. Please use VoxCPM responsibly.
+
+
+
+## 📝TO-DO List
+Please stay tuned for updates!
+- [ ] Release the VoxCPM technical report.
+- [ ] Support higher sampling rate (next version).
 
 
 
