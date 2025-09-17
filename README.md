@@ -37,6 +37,22 @@ Unlike mainstream approaches that convert speech to discrete tokens, VoxCPM uses
 
 
 
+###  📝  TODO List
+🎉  Please stay tuned for updates!
+
+ - <label>
+    <input type="checkbox" disabled>
+    <span>Release technical report</span>
+  </label>
+
+ - <label>
+    <input type="checkbox" disabled>
+    <span>Support higher sampling rate</span>
+  </label>
+
+
+
+
 
 
 
