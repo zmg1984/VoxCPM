@@ -244,14 +244,13 @@ def create_demo_interface(demo: VoxCPMDemo):
                     text = gr.Textbox(
                         value="VoxCPM is an innovative end-to-end TTS model from ModelBest, designed to generate highly realistic speech.",
                         label="Target Text",
-                        info="Default processing splits text on \\n into paragraphs; each is synthesized as a chunk and then concatenated into the final audio."
                     )
                 with gr.Row():
                     DoNormalizeText = gr.Checkbox(
                         value=False,
                         label="Text Normalization",
                         elem_id="chk_normalize",
-                        info="We use WeTextPorcessing library to normalize the input text."
+                        info="We use wetext library to normalize the input text."
                     )
                 audio_output = gr.Audio(label="Output Audio")
 
