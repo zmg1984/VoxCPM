@@ -130,6 +130,7 @@ class VoxCPM:
         if (prompt_wav_path is None) != (prompt_text is None):
             raise ValueError("prompt_wav_path and prompt_text must both be provided or both be None")
         
+        text = text.replace("\n", " ")
         temp_prompt_wav_path = None
         
         try:
