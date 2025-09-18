@@ -283,10 +283,11 @@ class VoxCPMModel(nn.Module):
                 else:
                     break
             else:
+                break   
                 
         decode_audio = self.audio_vae.decode(latent_pred.to(torch.float32)).squeeze(1).cpu()  
         decode_audio = decode_audio[..., 640:-640] # trick: trim the start and end of the audio
-        return decode_audio
+        return decode_audio        
     
     @torch.inference_mode()
     def build_prompt_cache(
