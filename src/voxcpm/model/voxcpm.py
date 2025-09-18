@@ -160,8 +160,8 @@ class VoxCPMModel(nn.Module):
             self.feat_encoder_step = torch.compile(self.feat_encoder, mode="reduce-overhead", fullgraph=True)
             self.feat_decoder.estimator = torch.compile(self.feat_decoder.estimator, mode="reduce-overhead", fullgraph=True)
         except Exception as e:
-            print(e)
-            print("VoxCPMModel can not be optimized by torch.compile, using original forward_step functions")
+            print(f"Error: {e}")
+            print("Warning: VoxCPMModel can not be optimized by torch.compile, using original forward_step functions")
             self.base_lm.forward_step = self.base_lm.forward_step
             self.residual_lm.forward_step = self.residual_lm.forward_step
             self.feat_encoder_step = self.feat_encoder
