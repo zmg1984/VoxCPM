@@ -39,4 +39,3 @@ $:
       services:
         - vscode
         - docker
-        - nvidia-container-toolkit
