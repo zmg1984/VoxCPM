@@ -1,0 +1,55 @@
+name: voxcpm-env  # 自定义配置名称，方便识别
+
+# 构建触发规则：推送到main分支自动构建镜像
+triggers:
+  - type: push
+    branch: main
+
+# 构建任务：编译并推送Docker镜像（固化运行环境）
+jobs:
+  build-image:
+    runner: cnb-runner  # 使用平台默认构建器
+    steps:
+      # 步骤1：拉取仓库代码
+      - name: checkout code
+        type: checkout
+
+      # 步骤2：构建Docker镜像（基于项目根目录的Dockerfile）
+      - name: build voxcpm image
+        type: docker-build
+        params:
+          # 镜像地址：替换<你的镜像版本>（如v1.0），用户名已固定
+          image: docker.cnb.cool/shijian_yiqiang/voxcpm:<你的镜像版本>
+          dockerfile: ./Dockerfile  # Dockerfile在项目根目录
+
+      # 步骤3：推送镜像到CNB仓库
+      - name: push image to registry
+        type: docker-push
+        params:
+          # 与构建时的镜像名完全一致
+          image: docker.cnb.cool/shijian_yiqiang/voxcpm:<你的镜像版本>
+
+# 在线IDE（VS Code）配置：定义运行环境参数
+$:
+  vscode:
+    - docker:
+        # 绑定推送的镜像（替换<你的镜像版本>）
+        image:
+          name: docker.cnb.cool/shijian_yiqiang/voxcpm:<你的镜像版本>
+          # 自动注入仓库凭证，无需手动修改
+          dockerUser: $CNB_TOKEN_USER_NAME
+          dockerPassword: $CNB_TOKEN
+      # 资源规格（匹配VoxCPM需求，带GPU）
+      runner:
+        cpus: 8  # 满足大模型运行的CPU核心数
+        memory: 32G  # 足够的内存支持模型加载
+        tags: cnb:arch:amd64:gpu  # 强制调度到AMD64架构的GPU机器
+      # 环境变量：启动时自动执行初始化命令
+      env:
+        # 启动后自动安装依赖并检查环境
+        CNB_WELCOME_EXECUTE_COMMAND: bash /workspace/init.sh
+      # 启用必要服务（确保GPU和工具可用）
+      services:
+        - vscode  # 在线编辑器
+        - docker  # 允许使用docker命令
+        - nvidia-container-toolkit  # GPU驱动挂载（关键）
